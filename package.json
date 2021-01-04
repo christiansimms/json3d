@@ -6,7 +6,8 @@
     "dependencies": {
         "@babylonjs/core": "preview",
         "@babylonjs/loaders": "preview",
-        "@babylonjs/materials": "preview"
+        "@babylonjs/materials": "preview",
+        "gh-pages": "^3.1.0"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^2.30.0",
@@ -27,7 +28,9 @@
     "scripts": {
         "start": "npx webpack-dev-server --config webpack.dev.js",
         "build": "npx webpack --config webpack.prod.js",
-        "lint": "npx eslint . --ext .ts,.tsx"
+        "lint": "npx eslint . --ext .ts,.tsx",
+        "predeploy": "npm run build",
+        "deploy": "gh-pages -d dist"
     },
     "repository": {
         "type": "git",
@@ -49,5 +52,5 @@
     "bugs": {
         "url": "https://github.com/christiansimms/json3d/issues"
     },
-    "homepage": "https://github.com/christiansimms/json3d"
+    "homepage": "https://christiansimms.github.io/json3d/"
 }

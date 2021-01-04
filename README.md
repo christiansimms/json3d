@@ -1,5 +1,7 @@
 # json3d: A web app to view json files in 3d using Babylon.js
 
+View it live at: https://christiansimms.github.io/json3d/
+
 ## Build Setup
 
 If you want to run and test this locally:
