@@ -431,9 +431,10 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
         } else {
             opposite = zDiff / 2;
         }
-        const distance = opposite / Math.tan(fov / 2);
+        let distance = opposite / Math.tan(fov / 2);
         if (distance >= this.camera.maxZ) {
-            throw 'Distance was too large';
+            distance = this.camera.maxZ;
+            console.warn('Distance was too large, so using largest possible value');
         }
 
         console.log(`Diffs: x: ${xDiff}, ${zDiff}  -- Also, screen width x height: ${screenWidth} x ${screenHeight} -- camera distance=${distance}`);
