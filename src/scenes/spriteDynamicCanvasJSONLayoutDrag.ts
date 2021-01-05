@@ -33,6 +33,7 @@ import {
     Mesh,
     StandardMaterial, BoundingBox, FreeCamera, UniversalCamera, Camera, TargetCamera, FlyCamera
 } from "@babylonjs/core";
+import {SkyMaterial} from "@babylonjs/materials/sky";
 
 enum Direction {
     xDirection,
@@ -387,11 +388,22 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
         this.displayJson(this.scene, SMALL_RANDOM_ARRAY_JSON);
         this.listenForDroppedFiles(engine, scene, canvas);
         this.listenForNavigation();
+        this.addSkyMaterial();
 
         showAxis(5, scene);
 
         return scene;
     };
+
+    addSkyMaterial(): void {
+        const skyMaterial = new SkyMaterial("skyMaterial", this.scene);
+        skyMaterial.backFaceCulling = false;
+        skyMaterial.inclination = 0;
+        skyMaterial.turbidity = 0.5;
+        skyMaterial.cameraOffset.y = 0;
+        const skybox = BoxBuilder.CreateBox("skyBox", {size: 10000.0}, this.scene);
+        skybox.material = skyMaterial;
+    }
 
     displayOrigin(): void {
         this.camera.target = new Vector3(0, 0, 0);
