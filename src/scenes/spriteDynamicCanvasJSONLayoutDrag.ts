@@ -384,8 +384,8 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
         ground.material = groundMaterial;
         // ground.position.y -= 0.5;
 
-        // this.displayJson(this.scene, SMALL_RANDOM_OBJECT_JSON);
-        this.displayJson(this.scene, SMALL_RANDOM_ARRAY_JSON);
+        // this.displayJson(SMALL_RANDOM_OBJECT_JSON);
+        // this.displayJson(SMALL_RANDOM_ARRAY_JSON);
         this.listenForDroppedFiles(engine, scene, canvas);
         this.listenForNavigation();
         this.addSkyMaterial();
@@ -530,27 +530,27 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
             if (loadedEvent && loadedEvent.target) {
                 console.log(`Read file: `, (loadedEvent.target.result as string).length);
                 const json = JSON.parse(loadedEvent.target.result as string);
-                this.displayJson(this.scene, json);
+                this.displayJson(json);
             }
         };
         reader.readAsText(theFile);
     }
     
-    displayJson(scene: Scene, json): void {
+    displayJson(json: any): void {
         // Create a packed manager
         // const spriteMgr = new SpriteMgr(SMALL_RANDOM_OBJECT_JSON);
         // const spriteMgr = new SpriteMgr(SMALL_RANDOM_ARRAY_JSON);
         // const spriteMgr = new SpriteMgr(RANDOM_JSON);
         // const spriteMgr = new SpriteMgr(RANDOM_OBJECT_C_TMLANGUAGE_JSON);
         const spriteMgr = new SpriteMgr(json);
-        spriteMgr.makeTextForSprites(scene);
+        spriteMgr.makeTextForSprites(this.scene);
 
         const thinstanceMgr = new ThinstanceMgr();
         this.thinstanceMgr = thinstanceMgr;
-        const layoutMgr = new LayoutMgr(scene, spriteMgr, thinstanceMgr);
+        const layoutMgr = new LayoutMgr(this.scene, spriteMgr, thinstanceMgr);
         layoutMgr.displayAndLayoutJson();
         
-        scene.onPointerDown = (evt, pickResult) => {
+        this.scene.onPointerDown = (evt, pickResult) => {
             // console.log('PICK!', pickResult); // pickResult.pickedMesh.name);
             if (pickResult.pickedMesh && pickResult.thinInstanceIndex >= 0) {
                 console.log('Got a thinstance!', pickResult.thinInstanceIndex);

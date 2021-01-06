@@ -35,11 +35,33 @@
           height: 20px;
       }
 
+      #formDiv {
+          margin: 1em;
+      }
+      #formDiv div {
+          margin: 1em;
+      }
+
       </style>
   </head>
 
   <body>
     <div id="fps">0</div>
+    <div id="formDiv">
+        <h1>View JSON in 3D</h1>
+        <div>For more details, see: <a href="https://github.com/christiansimms/json3d">https://github.com/christiansimms/json3d</a></div>
+        <div>You can:</div>
+        <div>
+            <input type="button" id="buttonSmallJSON" value="View Sample">
+        </div>
+        <div>
+            <input type="button" id="buttonLargeJSON" value="View Larger Sample">
+        </div>
+        <div>
+            View any JSON file you have:
+            <input type="file" id="inputFile" accept="application/JSON">
+        </div>
+    </div>
     <canvas id="renderCanvas" touch-action="none"></canvas>
   </body>
 
