@@ -31,6 +31,8 @@ class SceneMgr {
         const buttonSmallJSON: HTMLElement = document.getElementById('buttonSmallJSON') as HTMLElement;
         buttonSmallJSON.addEventListener('click', event => {
             console.log('CLICKED!');
+            const formDiv: HTMLElement = document.getElementById('formDiv') as HTMLElement;
+            formDiv.style.display = 'none';
             this.createSceneWithJSON(SMALL_RANDOM_ARRAY_JSON);
         });
 
@@ -99,6 +101,10 @@ class SceneMgr {
         // Create the scene
         const module = new DefaultSceneWithTexture();
         const scene = await module.createScene(this.engine, this.canvas);
+        setTimeout(() => {
+            this.canvas.tabIndex = 1;  // Need to do this before calling focus().
+            this.canvas.focus();
+        }, 0);
         module.displayJson(json);
     }
 }
