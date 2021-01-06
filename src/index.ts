@@ -2,6 +2,8 @@ import { Engine } from "@babylonjs/core/Engines/engine";
 import { getSceneModuleWithName } from "./createScene";
 import {RANDOM_JSON, SMALL_RANDOM_ARRAY_JSON} from "../assets/randomJson";
 import {DefaultSceneWithTexture} from "./scenes/spriteDynamicCanvasJSONLayoutDrag";
+import {Scene} from "@babylonjs/core/scene";
+import {FilesInput} from "@babylonjs/core";
 
 const getModuleToLoad = (): string | undefined => {
     // ATM using location.search
@@ -58,10 +60,27 @@ class SceneMgr {
             }
         });
 
+        this.listenForDroppedFiles();
+
         // Watch for browser/canvas resize events
         window.addEventListener("resize", function () {
             engine.resize();
         });
+    }
+
+    listenForDroppedFiles(): void {
+        const filesInput = new FilesInput(this.engine, null, null, null, null, null, null , null, null);
+        filesInput.onProcessFileCallback = (file, name, extension) => {
+            console.log("done: " + (typeof file) + " " + name + " " + extension);
+            this.readJSONFile(file).then(json => {
+                this.createSceneWithJSON(json);
+            });
+            return true;
+        };
+        filesInput.reload = function () {
+            // Override to avoid problems.
+        };
+        filesInput.monitorElementForDragNDrop(this.canvas);
     }
 
     async readJSONFile(file: File): Promise<any> {

@@ -382,11 +382,7 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
         // Load a texture to be used as the ground material
         const groundMaterial = new GridMaterial("groundMaterial", scene);
         ground.material = groundMaterial;
-        // ground.position.y -= 0.5;
 
-        // this.displayJson(SMALL_RANDOM_OBJECT_JSON);
-        // this.displayJson(SMALL_RANDOM_ARRAY_JSON);
-        this.listenForDroppedFiles(engine, scene, canvas);
         this.listenForNavigation();
         this.addSkyMaterial();
 
@@ -507,19 +503,6 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
                 }
             }
         });
-    }
-    
-    listenForDroppedFiles(engine: Engine, scene: Scene, canvas: HTMLCanvasElement): void {
-        const filesInput = new FilesInput(engine, scene, null, null, null, null, null , null, null);
-        filesInput.onProcessFileCallback = (file, name, extension) => {
-            console.log("done: " + (typeof file) + " " + name + " " + extension);
-            this.loadAsText(file);
-            return true;
-        };
-        filesInput.reload = function () {
-            // Override to avoid problems.
-        };
-        filesInput.monitorElementForDragNDrop(canvas);
     }
     
     loadAsText(theFile) {
