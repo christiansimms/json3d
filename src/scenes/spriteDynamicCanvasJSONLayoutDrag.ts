@@ -328,6 +328,7 @@ class ThinstanceMgr {
 
 export class DefaultSceneWithTexture implements CreateSceneClass {
 
+    wantGroundAndAxis = false;
     speed = 45;
     frameCount = 100;
 
@@ -349,9 +350,9 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
         // const camera = new FlyCamera("camera1", new Vector3(0, 10, -20), scene);
         // const camera = new UniversalCamera("camera1", new Vector3(0, 10, -20), scene);
         const camera = new ArcRotateCamera(
-            "my first camera",
+            "camera1",
             0,
-            Math.PI / 3,
+            0,
             20,
             new Vector3(0, 0, 0),
             scene
@@ -361,7 +362,8 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
         this.camera = camera;
 
         // This targets the camera to scene origin
-        camera.setTarget(Vector3.Zero());
+        // camera.setTarget(Vector3.Zero());
+        this.displayOrigin();
 
         // This attaches the camera to the canvas
         camera.attachControl(canvas, true);
@@ -372,21 +374,23 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
         // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
 
-        // Our built-in 'ground' shape.
-        const ground = GroundBuilder.CreateGround(
-            "ground",
-            {width: 6, height: 6},
-            scene
-        );
+        if (this.wantGroundAndAxis) {
+            // Our built-in 'ground' shape.
+            const ground = GroundBuilder.CreateGround(
+                "ground",
+                {width: 6, height: 6},
+                scene
+            );
 
-        // Load a texture to be used as the ground material
-        const groundMaterial = new GridMaterial("groundMaterial", scene);
-        ground.material = groundMaterial;
+            // Load a texture to be used as the ground material
+            const groundMaterial = new GridMaterial("groundMaterial", scene);
+            ground.material = groundMaterial;
+
+            showAxis(5, scene);
+        }
 
         this.listenForNavigation();
         this.addSkyMaterial();
-
-        showAxis(5, scene);
 
         return scene;
     };
@@ -403,7 +407,7 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
 
     displayOrigin(): void {
         this.camera.target = new Vector3(0, 0, 0);
-        this.camera.position = new Vector3(20, 10, 0);
+        this.camera.position = new Vector3(-20, 10, -20);
         this.camera.update();
     }
 
