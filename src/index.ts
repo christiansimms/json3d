@@ -1,5 +1,5 @@
-import { Engine } from "@babylonjs/core/Engines/engine";
-import { getSceneModuleWithName } from "./createScene";
+import {Engine} from "@babylonjs/core/Engines/engine";
+import {getSceneModuleWithName} from "./createScene";
 import {RANDOM_JSON, SMALL_RANDOM_ARRAY_JSON} from "../assets/randomJson";
 import {DefaultSceneWithTexture} from "./scenes/spriteDynamicCanvasJSONLayoutDrag";
 import {Scene} from "@babylonjs/core/scene";
@@ -7,7 +7,7 @@ import {FilesInput} from "@babylonjs/core";
 
 const getModuleToLoad = (): string | undefined => {
     // ATM using location.search
-    if(!location.search) {
+    if (!location.search) {
         return;
     } else {
         return location.search.substr(location.search.indexOf('scene=') + 6);
@@ -63,6 +63,7 @@ class SceneMgr {
         });
 
         this.listenForDroppedFiles();
+        this.listenToBrowserNavigation();
 
         // Watch for browser/canvas resize events
         window.addEventListener("resize", function () {
@@ -71,7 +72,7 @@ class SceneMgr {
     }
 
     listenForDroppedFiles(): void {
-        const filesInput = new FilesInput(this.engine, null, null, null, null, null, null , null, null);
+        const filesInput = new FilesInput(this.engine, null, null, null, null, null, null, null, null);
         filesInput.onProcessFileCallback = (file, name, extension) => {
             console.log("done: " + (typeof file) + " " + name + " " + extension);
             this.readJSONFile(file).then(json => {
@@ -85,6 +86,28 @@ class SceneMgr {
         filesInput.monitorElementForDragNDrop(this.canvas);
     }
 
+    listenToBrowserNavigation(): void {
+        // window.onpopstate = (event: PopStateEvent) => {
+        //     // alert("location: " + document.location + ", state: " + JSON.stringify(event.state));
+        //     this.resetPage();
+        // };
+    }
+
+    resetPage(): void {
+        // Show form.
+        const formDiv: HTMLElement = document.getElementById('formDiv') as HTMLElement;
+        formDiv.style.display = '';
+
+        // Hide canvas.
+        this.canvas.style.display = 'none';
+
+        // Remove old scenes.
+        while (this.engine.scenes.length > 0) {
+            console.log('Removing old scene');
+            this.engine.scenes[0].dispose();
+        }
+    }
+
     async readJSONFile(file: File): Promise<any> {
         const text = await file.text();
         // console.log('File read: ', text);
@@ -92,6 +115,11 @@ class SceneMgr {
     }
 
     private async createSceneWithJSON(json: any): Promise<void> {
+        // Change url, so user can go Back.
+        // const url = new URL(window.location.href);
+        // url.searchParams.set('scene', 'scene');
+        // window.history.pushState({}, '', url.href);
+
         // Remove old scenes.
         while (this.engine.scenes.length > 0) {
             console.log('Removing old scene');
