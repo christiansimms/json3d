@@ -348,21 +348,20 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
 
         // This creates and positions a camera.
         // const camera = new FlyCamera("camera1", new Vector3(0, 10, -20), scene);
-        // const camera = new UniversalCamera("camera1", new Vector3(0, 10, -20), scene);
-        const camera = new ArcRotateCamera(
-            "camera1",
-            0,
-            0,
-            20,
-            new Vector3(0, 0, 0),
-            scene
-        );
+        const camera = new UniversalCamera("camera1", new Vector3(0, 10, -20), scene);
+        // const camera = new ArcRotateCamera(
+        //     "camera1",
+        //     0,
+        //     0,
+        //     20,
+        //     new Vector3(0, 0, 0),
+        //     scene
+        // );
 
         // camera.maxZ = 100000; // Works, but then system acts weird.
         this.camera = camera;
 
         // This targets the camera to scene origin
-        // camera.setTarget(Vector3.Zero());
         this.displayOrigin();
 
         // This attaches the camera to the canvas
@@ -406,8 +405,8 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
     }
 
     displayOrigin(): void {
-        this.camera.target = new Vector3(0, 0, 0);
         this.camera.position = new Vector3(-20, 10, -20);
+        this.camera.target = new Vector3(0, 0, 0);
         this.camera.update();
     }
 
