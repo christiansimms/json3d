@@ -228,7 +228,7 @@ class LayoutMgr {
         const offsets: Offsets = {xOffset: 0, zOffset: 0};
         if (json instanceof Array) {
             // Arrays are stacked in z-direction, each element goes in x-direction.
-            y -= 2;
+            y -= 4;
             json.forEach(child => {
                 const offset = this.displayJsonRec(child, x, y, z + offsets.zOffset, Direction.xDirection);
                 this.thinstanceMgr.addMarker(KindOfMarker.arrayMarker, x, y, z + offsets.zOffset, offset);
@@ -237,7 +237,7 @@ class LayoutMgr {
             });
         } else if (json instanceof Object) {
             // Objects are stacked in x-direction, each element goes in z-direction.
-            y -= 2;
+            y -= 4;
             Object.keys(json).forEach(key => {
                 // Display key.
                 const offsetKey = this.addSprite(key, x + offsets.xOffset, y, z, Direction.zDirection);
@@ -329,6 +329,7 @@ class ThinstanceMgr {
 export class DefaultSceneWithTexture implements CreateSceneClass {
 
     wantGroundAndAxis = false;
+    wantMeshSelection = false;
     speed = 45;
     frameCount = 100;
 
@@ -537,17 +538,17 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
         layoutMgr.displayAndLayoutJson();
         
         this.scene.onPointerDown = (evt, pickResult) => {
-            // console.log('PICK!', pickResult); // pickResult.pickedMesh.name);
-            if (pickResult.pickedMesh && pickResult.thinInstanceIndex >= 0) {
-                console.log('Got a thinstance!', pickResult.thinInstanceIndex);
-                // this.camera.moveTargetTo(pointerInfo.pickInfo.pickedMesh.position, 50);
-                const targetPosition = thinstanceMgr.getPositionOfInstance(pickResult.thinInstanceIndex);
-                console.log(`Setting targetPosition to ${targetPosition}`);
-                this.camera.target = targetPosition;
-                this.camera.update();
+            if (this.wantMeshSelection) {
+                // console.log('PICK!', pickResult); // pickResult.pickedMesh.name);
+                if (pickResult.pickedMesh && pickResult.thinInstanceIndex >= 0) {
+                    console.log('Got a thinstance!', pickResult.thinInstanceIndex);
+                    // this.camera.moveTargetTo(pointerInfo.pickInfo.pickedMesh.position, 50);
+                    const targetPosition = thinstanceMgr.getPositionOfInstance(pickResult.thinInstanceIndex);
+                    console.log(`Setting targetPosition to ${targetPosition}`);
+                    this.camera.target = targetPosition;
+                    this.camera.update();
+                }
             }
-            //let picked = evt.pickInfo.pickedMesh;
-            //console.log(evt.pickInfo);
         };
 
     }

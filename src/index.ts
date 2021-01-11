@@ -22,7 +22,6 @@ class SceneMgr {
     babylonInit(): void {
         const inputFile: HTMLElement = document.getElementById('inputFile') as HTMLElement;
         inputFile.addEventListener('change', async event => {
-            console.log('CHANGED!');
             const file = (event.target as any).files.item(0);
             const json = await this.readJSONFile(file);
             this.createSceneWithJSON(json);
@@ -30,7 +29,6 @@ class SceneMgr {
 
         const buttonSmallJSON: HTMLElement = document.getElementById('buttonSmallJSON') as HTMLElement;
         buttonSmallJSON.addEventListener('click', event => {
-            console.log('CLICKED!');
             const formDiv: HTMLElement = document.getElementById('formDiv') as HTMLElement;
             formDiv.style.display = 'none';
             this.createSceneWithJSON(SMALL_RANDOM_ARRAY_JSON);
@@ -38,7 +36,6 @@ class SceneMgr {
 
         const buttonLargeJSON: HTMLElement = document.getElementById('buttonLargeJSON') as HTMLElement;
         buttonLargeJSON.addEventListener('click', event => {
-            console.log('CLICKED!');
             this.createSceneWithJSON(RANDOM_JSON);
         });
 
