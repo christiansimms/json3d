@@ -1,7 +1,7 @@
 import {Engine} from "@babylonjs/core/Engines/engine";
 import {getSceneModuleWithName} from "./createScene";
 import {RANDOM_JSON, SMALL_RANDOM_ARRAY_JSON} from "../assets/randomJson";
-import {DefaultSceneWithTexture} from "./scenes/spriteDynamicCanvasJSONLayoutDrag";
+import {Json3dScene} from "./scenes/json3dScene";
 import {Scene} from "@babylonjs/core/scene";
 import {FilesInput} from "@babylonjs/core";
 
@@ -124,7 +124,7 @@ class SceneMgr {
         }
 
         // Create the scene
-        const module = new DefaultSceneWithTexture();
+        const module = new Json3dScene();
         const scene = await module.createScene(this.engine, this.canvas);
         setTimeout(() => {
             this.canvas.tabIndex = 1;  // Need to do this before calling focus().

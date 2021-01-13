@@ -81,7 +81,7 @@ function updateOffsets(offsets: Offsets, offset: Offsets, elementsGoInThisDirect
 }
 
 // Run: npm start
-// Display with: http://localhost:8080/?scene=spriteDynamicCanvasJSONLayoutDrag
+// Display with: http://localhost:8080
 
 class SpriteMgr {
     lineHeight = 20;
@@ -333,7 +333,7 @@ async function loadDirectory(repo: string): Promise<any> {
     return result.json();
 }
 
-export class DefaultSceneWithTexture implements CreateSceneClass {
+export class Json3dScene implements CreateSceneClass {
 
     wantGroundAndAxis = false;
     wantMeshSelection = false;
@@ -574,4 +574,4 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
 
 }
 
-export default new DefaultSceneWithTexture();
+export default new Json3dScene();

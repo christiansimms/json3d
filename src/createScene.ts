@@ -11,7 +11,7 @@ export interface CreateSceneModule {
 }
 
 export const getSceneModuleWithName = (
-    name = 'spriteDynamicCanvasJSONLayoutDrag'
+    name = 'Json3dScene'
 ): Promise<CreateSceneClass> => {
     return import('./scenes/' + name).then((module: CreateSceneModule)=> {
         return module.default;
