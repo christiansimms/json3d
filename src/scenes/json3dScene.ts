@@ -2,8 +2,7 @@ import fetch from 'node-fetch';
 
 import {Engine} from "@babylonjs/core/Engines/engine";
 import {Scene} from "@babylonjs/core/scene";
-import {ArcRotateCamera} from "@babylonjs/core/Cameras/arcRotateCamera";
-import {Matrix, Vector3} from "@babylonjs/core/Maths/math.vector";
+import {Vector3} from "@babylonjs/core/Maths/math.vector";
 import {HemisphericLight} from "@babylonjs/core/Lights/hemisphericLight";
 import {GroundBuilder} from "@babylonjs/core/Meshes/Builders/groundBuilder";
 import {CreateSceneClass} from "../createScene";
@@ -14,319 +13,28 @@ import "@babylonjs/core/Materials/standardMaterial";
 // import {GridMaterial} from "@babylonjs/materials";
 import {GridMaterial} from "@babylonjs/materials/grid";
 import "@babylonjs/materials";
-import {SpritePackedManager} from "@babylonjs/core/Sprites/spritePackedManager";
-import {Sprite} from "@babylonjs/core/Sprites/sprite";
-import {ISpriteJSONAtlas, ISpriteJSONSprite} from "@babylonjs/core/Sprites/ISprites";
-import {
-    RANDOM_JSON,
-    RANDOM_OBJECT_C_TMLANGUAGE_JSON,
-    SMALL_RANDOM_ARRAY_JSON,
-    SMALL_RANDOM_OBJECT_JSON
-} from "../../assets/randomJson";
+import {SMALL_RANDOM_ARRAY_JSON} from "../../assets/randomJson";
 import {showAxis} from "../util";
 import {
-    Animation,
     Animatable,
+    Animation,
+    BoundingBox,
     BoxBuilder,
-    Color3, CubicEase, EasingFunction,
-    FilesInput,
+    CubicEase,
+    EasingFunction,
     KeyboardEventTypes,
     KeyboardInfo,
-    Mesh,
-    StandardMaterial, BoundingBox, FreeCamera, UniversalCamera, Camera, TargetCamera, FlyCamera
+    TargetCamera,
+    UniversalCamera
 } from "@babylonjs/core";
 import {SkyMaterial} from "@babylonjs/materials/sky";
-
-enum Direction {
-    xDirection,
-    zDirection,
-}
-
-enum KindOfMarker {
-    arrayMarker,
-    objectMarker,
-}
-
-interface FrameAndInfo {
-    frame: ISpriteJSONSprite;
-    textWidth: number;
-}
-
-interface Offsets {
-    xOffset: number;
-    zOffset: number;
-}
-
-interface Marker {
-    kind: KindOfMarker;
-    x: number;
-    y: number;
-    z: number;
-    xLength: number;
-    zLength: number;
-}
-
-const MAX_SPRITE_TEXT_WIDTH = 100;  // This is width of text pixels, not sprite width.
-
-function updateOffsets(offsets: Offsets, offset: Offsets, elementsGoInThisDirection: Direction): void {
-    if (elementsGoInThisDirection === Direction.xDirection) {
-        offsets.xOffset = Math.max(offsets.xOffset, offset.xOffset);
-        offsets.zOffset += offset.zOffset;
-    } else if (elementsGoInThisDirection === Direction.zDirection) {
-        offsets.xOffset += offset.xOffset;
-        offsets.zOffset = Math.max(offsets.zOffset, offset.zOffset);
-    } else {
-        throw 'Bad direction';
-    }
-}
+import {LayoutMgr} from "./layoutMgr";
+import {SpriteMgr} from "./spriteMgr";
+import {ThinstanceMgr} from "./thinstanceMgr";
 
 // Run: npm start
 // Display with: http://localhost:8080
 
-class SpriteMgr {
-    lineHeight = 20;
-    xFudgeFactor = 5;
-    yFudgeFactor = 2;
-
-    totalWidth = 1000;
-    totalHeight = 10000;
-
-    ctx!: CanvasRenderingContext2D;
-    frameCount = 0;
-    totalFutureSpriteCount = 0;
-    offset = this.lineHeight;
-    frames: ISpriteJSONSprite[] = [];
-    spriteImage!: string;
-    spriteAtlas!: ISpriteJSONAtlas;
-    mySpritePackedManager!: SpritePackedManager;
-
-    // textToFrames: { [text: string]: FrameAndInfo } = {};
-    textToFrames: Map<string, FrameAndInfo> = new Map();
-
-    constructor(public json: any) {
-        this.json = json;
-    }
-
-    maybeAddText(rawValue: any): void {
-        this.totalFutureSpriteCount++;
-
-        const text = '' + rawValue;
-        if (this.textToFrames.has(text)) {
-            // console.log('Cool -- found a duplicate', text);
-            return;
-        }
-
-        const textWidth = Math.min(this.ctx.measureText(text).width + 2 * this.xFudgeFactor, MAX_SPRITE_TEXT_WIDTH);
-        // console.log('Calc text width', text, textWidth);
-        // const textWidth = 100;
-
-        const _frame: Partial<ISpriteJSONSprite> = {
-            filename: `sprite${this.frameCount}`,
-            frame: {
-                x: 0,
-                y: this.offset - this.lineHeight + this.yFudgeFactor,
-                w: textWidth,
-                h: this.lineHeight + this.yFudgeFactor
-            },
-            rotated: false,
-            trimmed: false,
-        };
-        const frame: ISpriteJSONSprite = _frame as ISpriteJSONSprite;
-        this.textToFrames.set(text, {frame, textWidth});
-        this.frames.push(frame as ISpriteJSONSprite);
-        this.ctx.fillText(text, this.xFudgeFactor, this.offset);
-        this.offset += this.lineHeight;
-        this.frameCount++;
-    }
-
-    makeTextForSpritesRec(json: any): void {
-        if (json instanceof Array) {
-            json.forEach(child => {
-                this.makeTextForSpritesRec(child);
-            });
-        } else if (json instanceof Object) {
-            Object.keys(json).forEach(key => {
-                this.maybeAddText(key);
-                this.makeTextForSpritesRec(json[key]);
-            });
-        } else {
-            this.maybeAddText(json);
-        }
-    }
-
-    makeTextForSprites(scene: Scene): void {
-        // Add text.
-        const cv = document.createElement('canvas');
-        cv.width = this.totalWidth;
-        cv.height = this.totalHeight;
-
-        this.ctx = cv.getContext('2d') as any;
-        this.ctx.font = `22px Arial`
-        this.ctx.fillStyle = 'steelblue'
-        this.ctx.fillRect(0, 0, this.totalWidth, this.totalHeight)
-
-        this.ctx.fillStyle = '#fff'
-        this.makeTextForSpritesRec(this.json);
-
-        this.spriteImage = cv.toDataURL('image/png')
-        this.spriteAtlas = {
-            frames: this.frames,
-        };
-
-        this.mySpritePackedManager = new SpritePackedManager("spm", this.spriteImage, this.totalFutureSpriteCount, scene, this.spriteAtlas as any);
-        this.mySpritePackedManager.isPickable = true;
-    }
-
-}
-
-
-class LayoutMgr {
-    spriteCount = 0;
-
-    constructor(public scene: Scene, public spriteMgr: SpriteMgr, public thinstanceMgr: ThinstanceMgr) {
-    }
-
-    addSprite(rawValue: any, x: number, y: number, z: number, direction: Direction): Offsets {
-        // console.log(`addSprite.0 "${rawValue}" at (${x}, ${y}, ${z})`);
-        this.spriteCount++;
-        if (this.spriteCount > this.spriteMgr.totalFutureSpriteCount) {
-            throw 'Trying to make more sprites than we figured!';
-        }
-
-        const text = '' + rawValue;
-        const frameAndInfo = this.spriteMgr.textToFrames.get(text);
-        if (!frameAndInfo) {
-            throw `Did not find text: ${text}`;
-        }
-        const filename = frameAndInfo.frame.filename;
-        const sprite = new Sprite(filename, this.spriteMgr.mySpritePackedManager);
-        sprite.isPickable = true;
-        sprite.cellRef = filename;
-        sprite.width = frameAndInfo.textWidth / this.spriteMgr.lineHeight;
-
-        // Adjust based on direction -- we want x + z to be the middle of the sprite, not the left corner.
-        if (direction === Direction.xDirection) {
-            x += sprite.width / 2;
-        } else if (direction === Direction.zDirection) {
-            z += sprite.width / 2;
-        } else {
-            throw 'Bad direction';
-        }
-
-        sprite.position.x = x;
-        sprite.position.y = y;
-        sprite.position.z = z;
-        // console.log(`addSprite "${text}" at (${x}, ${y}, ${z}), sprite width=${sprite.width}`);
-        if (direction === Direction.xDirection) {
-            return {xOffset: sprite.width, zOffset: 0};
-        } else if (direction === Direction.zDirection) {
-            return {xOffset: 0, zOffset: sprite.width};
-        } else {
-            throw 'Bad direction';
-        }
-    }
-
-    private displayJsonRec(json: any, x: number, y: number, z: number, direction: Direction): Offsets {
-        const offsets: Offsets = {xOffset: 0, zOffset: 0};
-        if (json instanceof Array) {
-            // Arrays are stacked in z-direction, each element goes in x-direction.
-            y -= 4;
-            json.forEach(child => {
-                const offset = this.displayJsonRec(child, x, y, z + offsets.zOffset, Direction.xDirection);
-                this.thinstanceMgr.addMarker(KindOfMarker.arrayMarker, x, y, z + offsets.zOffset, offset);
-                updateOffsets(offsets, offset, Direction.xDirection);
-                offsets.zOffset += 2;
-            });
-        } else if (json instanceof Object) {
-            // Objects are stacked in x-direction, each element goes in z-direction.
-            y -= 4;
-            Object.keys(json).forEach(key => {
-                // Display key.
-                const offsetKey = this.addSprite(key, x + offsets.xOffset, y, z, Direction.zDirection);
-                this.thinstanceMgr.addMarker(KindOfMarker.objectMarker, x + offsets.xOffset, y, z, offsetKey);
-
-                // Display value.
-                const extraZSpace = 0.5;
-                const offsetValue = this.displayJsonRec(json[key], x + offsets.xOffset, y, z + offsetKey.zOffset + extraZSpace, Direction.zDirection);
-                this.thinstanceMgr.addMarker(KindOfMarker.objectMarker, x + offsets.xOffset, y, z + offsetKey.zOffset + extraZSpace, offsetValue);
-                const totalOffset: Offsets = {
-                    xOffset: offsetKey.xOffset + offsetValue.xOffset,
-                    zOffset: offsetKey.zOffset + offsetValue.zOffset + extraZSpace,
-                };
-                updateOffsets(offsets, totalOffset, Direction.zDirection);
-                offsets.xOffset += 2;
-            });
-        } else {
-            const offset = this.addSprite(json, x, y, z, direction);
-            return offset;
-        }
-        return offsets;
-    }
-
-    public displayAndLayoutJson(): void {
-        this.displayJsonRec(this.spriteMgr.json, 0, 0, 0, Direction.xDirection);
-        this.thinstanceMgr.makeInstances(this.scene);
-    }
-}
-
-class ThinstanceMgr {
-    box!: Mesh;
-    markers: Marker[] = [];
-
-    makeInstances(scene: Scene) {
-        const box = BoxBuilder.CreateBox("root", {size: 1});
-        this.box = box;
-        box.thinInstanceEnablePicking = true;
-
-        const instanceCount = this.markers.length;
-
-        const matricesData = new Float32Array(16 * instanceCount);
-        const colorData = new Float32Array(4 * instanceCount);
-
-        const m = Matrix.Identity();
-        const _m = m['_m'];
-        for (let index = 0; index < instanceCount; index++) {
-            const marker = this.markers[index];
-            _m[0] = marker.xLength || 0.5;  // x scale
-            _m[5] = 0.5;  // y scale
-            _m[10] = marker.zLength || 0.5;  // z scale
-            _m[12] = marker.x + marker.xLength / 2;
-            _m[13] = marker.y + 1.0;
-            _m[14] = marker.z + marker.zLength / 2;
-            // console.log(`makeInstance at (${_m[12]}, _m[13]}, _m[14]})`)
-            m.copyToArray(matricesData, index * 16);
-
-            colorData[index * 4 + 0] = marker.kind === KindOfMarker.objectMarker ? 1 : 0;  // red
-            colorData[index * 4 + 1] = 0;  // green
-            colorData[index * 4 + 2] = marker.kind === KindOfMarker.arrayMarker ? 1 : 0;  // blue
-            colorData[index * 4 + 3] = 1.0;  // alpha
-        }
-
-        box.thinInstanceSetBuffer("matrix", matricesData, 16, false);
-        box.thinInstanceSetBuffer("color", colorData, 4, false);
-
-        const boxMaterial = new StandardMaterial("material", scene);
-        boxMaterial.disableLighting = true;
-        boxMaterial.emissiveColor = Color3.White();
-        boxMaterial.alpha = 0.5;
-        box.material = boxMaterial;
-    }
-
-    addMarker(kind: KindOfMarker, x: number, y: number, z: number, offsets: Offsets): void {
-        this.markers.push({
-            kind: kind,
-            x, y, z,
-            xLength: offsets.xOffset,
-            zLength: offsets.zOffset,
-        });
-        // console.log(`AddArrayMarker at (${x}, ${y}, ${z}), xLength=${offsets.xOffset}, zLength=${offsets.zOffset}`);
-    }
-
-    getPositionOfInstance(thinInstanceIndex: number): Vector3 {
-        const marker = this.markers[thinInstanceIndex];
-        return new Vector3(marker.x, marker.y, marker.z);
-    }
-}
 
 async function loadDirectory(repo: string): Promise<any> {
     const result = await fetch(`/api/read-directory?repo=${repo}`)
@@ -390,7 +98,7 @@ export class Json3dScene implements CreateSceneClass {
             );
 
             // Load a texture to be used as the ground material
-            const groundMaterial = new GridMaterial("groundMaterial", scene);
+            const groundMaterial: GridMaterial = new GridMaterial("groundMaterial", scene);
             ground.material = groundMaterial;
 
             showAxis(5, scene);
