@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 import {Engine} from "@babylonjs/core/Engines/engine";
 import {Scene} from "@babylonjs/core/scene";
 import {ArcRotateCamera} from "@babylonjs/core/Cameras/arcRotateCamera";
@@ -326,6 +328,11 @@ class ThinstanceMgr {
     }
 }
 
+async function loadDirectory(repo: string): Promise<any> {
+    const result = await fetch(`/api/read-directory?repo=${repo}`)
+    return result.json();
+}
+
 export class DefaultSceneWithTexture implements CreateSceneClass {
 
     wantGroundAndAxis = false;
@@ -387,6 +394,17 @@ export class DefaultSceneWithTexture implements CreateSceneClass {
             ground.material = groundMaterial;
 
             showAxis(5, scene);
+        }
+
+        // Possibly load file.
+        const params = new URLSearchParams(location.search);
+        const repo = params.get('repo') as string;
+        if (repo) {
+            const json = await loadDirectory(repo);
+            this.displayJson(json);
+        } else {
+            // this.displayJson(SMALL_RANDOM_OBJECT_JSON);
+            this.displayJson(SMALL_RANDOM_ARRAY_JSON);
         }
 
         this.listenForNavigation();
