@@ -1,9 +1,10 @@
 import {Scene} from "@babylonjs/core/scene";
 import {SpriteMgr} from "./spriteMgr";
 import {ThinstanceMgr} from "./thinstanceMgr";
-import {Direction, KindOfMarker, Layout, LayoutMgr, Offsets} from "./model";
+import {Direction, KindOfMarker, Layout, LayoutMgr, MAX_SPRITE_TEXT_WIDTH, Offsets} from "./model";
 
-export class SimpleLayoutMgr implements LayoutMgr {
+export class RingLayoutMgr implements LayoutMgr {
+    spriteCount = 0;
 
     constructor(public scene: Scene, public spriteMgr: SpriteMgr, public thinstanceMgr: ThinstanceMgr) {
     }
@@ -33,15 +34,28 @@ export class SimpleLayoutMgr implements LayoutMgr {
         }
     }
 
-    private displayJsonRec(json: any, x: number, y: number, z: number, direction: Direction): Offsets {
+    private displayJsonRingRec(json: any, x: number, y: number, z: number, direction: Direction): Offsets {
         const offsets: Offsets = {xOffset: 0, zOffset: 0};
         if (json instanceof Array) {
             // Arrays are stacked in z-direction, each element goes in x-direction.
             y -= 4;
-            json.forEach(child => {
-                const offset = this.displayJsonRec(child, x, y, z + offsets.zOffset, Direction.xDirection);
-                this.thinstanceMgr.addMarker(KindOfMarker.arrayMarker, x, y, z + offsets.zOffset, offset);
-                updateOffsets(offsets, offset, Direction.xDirection);
+            const childrenCount = json.length;
+            const angleStep = Math.PI * 2 / childrenCount;
+
+            // Calculate circumference.
+            const maxWidthOfEachChildGuess = MAX_SPRITE_TEXT_WIDTH / this.spriteMgr.lineHeight; // Currently 5.
+            const totalCircumference = childrenCount * (maxWidthOfEachChildGuess + 3);
+            const radius = totalCircumference / Math.PI / 2;
+
+            json.forEach((child, index) => {
+                const angle = index * angleStep;
+                // position
+                const ringX = Math.cos(angle) * radius;
+                const ringZ = Math.sin(angle) * radius;
+
+                const offset = this.displayJsonRingRec(child, x + ringX, y, z + ringZ, Direction.xDirection);
+                this.thinstanceMgr.addMarker(KindOfMarker.arrayMarker, x + ringX, y, z + ringZ, offset);
+                // updateOffsets(offsets, offset, Direction.xDirection);
                 offsets.zOffset += 2;
             });
         } else if (json instanceof Object) {
@@ -54,13 +68,13 @@ export class SimpleLayoutMgr implements LayoutMgr {
 
                 // Display value.
                 const extraZSpace = 0.5;
-                const offsetValue = this.displayJsonRec(json[key], x + offsets.xOffset, y, z + offsetKey.zOffset + extraZSpace, Direction.zDirection);
+                const offsetValue = this.displayJsonRingRec(json[key], x + offsets.xOffset, y, z + offsetKey.zOffset + extraZSpace, Direction.zDirection);
                 this.thinstanceMgr.addMarker(KindOfMarker.objectMarker, x + offsets.xOffset, y, z + offsetKey.zOffset + extraZSpace, offsetValue);
                 const totalOffset: Offsets = {
                     xOffset: offsetKey.xOffset + offsetValue.xOffset,
                     zOffset: offsetKey.zOffset + offsetValue.zOffset + extraZSpace,
                 };
-                updateOffsets(offsets, totalOffset, Direction.zDirection);
+                // updateOffsets(offsets, totalOffset, Direction.zDirection);
                 offsets.xOffset += 2;
             });
         } else {
@@ -70,19 +84,8 @@ export class SimpleLayoutMgr implements LayoutMgr {
     }
 
     public displayAndLayoutJson(layout: Layout): void {
-        this.displayJsonRec(this.spriteMgr.json, 0, 0, 0, Direction.xDirection);
+        this.displayJsonRingRec(this.spriteMgr.json, 0, 0, 0, Direction.xDirection);
         this.thinstanceMgr.makeInstances(this.scene);
     }
 }
 
-function updateOffsets(offsets: Offsets, offset: Offsets, elementsGoInThisDirection: Direction): void {
-    if (elementsGoInThisDirection === Direction.xDirection) {
-        offsets.xOffset = Math.max(offsets.xOffset, offset.xOffset);
-        offsets.zOffset += offset.zOffset;
-    } else if (elementsGoInThisDirection === Direction.zDirection) {
-        offsets.xOffset += offset.xOffset;
-        offsets.zOffset = Math.max(offsets.zOffset, offset.zOffset);
-    } else {
-        throw 'Bad direction';
-    }
-}

@@ -2,6 +2,7 @@ import {ISpriteJSONAtlas, ISpriteJSONSprite} from "@babylonjs/core/Sprites/ISpri
 import {SpritePackedManager} from "@babylonjs/core/Sprites/spritePackedManager";
 import {Scene} from "@babylonjs/core/scene";
 import {FrameAndInfo, MAX_SPRITE_TEXT_WIDTH} from "./model";
+import {Sprite} from "@babylonjs/core/Sprites/sprite";
 
 export class SpriteMgr {
     lineHeight = 20;
@@ -14,6 +15,7 @@ export class SpriteMgr {
     ctx!: CanvasRenderingContext2D;
     frameCount = 0;
     totalFutureSpriteCount = 0;
+    spriteCount = 0;
     offset = this.lineHeight;
     frames: ISpriteJSONSprite[] = [];
     spriteImage!: string;
@@ -25,6 +27,31 @@ export class SpriteMgr {
 
     constructor(public json: any) {
         this.json = json;
+    }
+
+    makeSprite(rawValue: any, x: number, y: number, z: number): Sprite {
+        // console.log(`makeSprite.0 "${rawValue}" at (${x}, ${y}, ${z})`);
+        this.spriteCount++;
+        if (this.spriteCount > this.totalFutureSpriteCount) {
+            throw 'Trying to make more sprites than we figured!';
+        }
+
+        const text = '' + rawValue;
+        const frameAndInfo = this.textToFrames.get(text);
+        if (!frameAndInfo) {
+            throw `Did not find text: ${text}`;
+        }
+        const filename = frameAndInfo.frame.filename;
+        const sprite = new Sprite(filename, this.mySpritePackedManager);
+        sprite.isPickable = true;
+        sprite.cellRef = filename;
+        sprite.width = frameAndInfo.textWidth / this.lineHeight;
+
+        sprite.position.x = x;
+        sprite.position.y = y;
+        sprite.position.z = z;
+
+        return sprite;
     }
 
     maybeAddText(rawValue: any): void {

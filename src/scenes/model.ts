@@ -35,3 +35,7 @@ export interface Marker {
 }
 
 export const MAX_SPRITE_TEXT_WIDTH = 100;  // This is width of text pixels, not sprite width.
+
+export interface LayoutMgr {
+    displayAndLayoutJson(layout: Layout);
+}

@@ -28,10 +28,11 @@ import {
     UniversalCamera
 } from "@babylonjs/core";
 import {SkyMaterial} from "@babylonjs/materials/sky";
-import {LayoutMgr} from "./layoutMgr";
 import {SpriteMgr} from "./spriteMgr";
 import {ThinstanceMgr} from "./thinstanceMgr";
-import {Layout} from "./model";
+import {Layout, LayoutMgr} from "./model";
+import {SimpleLayoutMgr} from "./layoutMgr";
+import {RingLayoutMgr} from "./ringLayoutMgr";
 
 // Run: npm start
 // Display with: http://localhost:8080
@@ -152,14 +153,14 @@ export class Json3dScene implements CreateSceneClass {
         // target here is the centerpoint closest to us
         const target = boundingBox.centerWorld.clone();
         target.y = boundingBox.minimumWorld.y;
-        
+
         const xDiff = boundingBox.maximumWorld.x - boundingBox.minimumWorld.x;
         const zDiff = boundingBox.maximumWorld.z - boundingBox.minimumWorld.z;
 
         const screenWidth = this.engine.getRenderWidth();
         const screenHeight = this.engine.getRenderHeight();
         const fov = this.camera.fov;
-        
+
         const horizPercent = xDiff / screenWidth;
         const vertPercent = zDiff / screenHeight;
 
@@ -186,7 +187,7 @@ export class Json3dScene implements CreateSceneClass {
     displayBottomSmart(): void {
         const boundingInfo = this.thinstanceMgr.box.getBoundingInfo();
         const [target, position] = this.getCameraInfoFromBoundingBox(boundingInfo.boundingBox);
-        
+
         this.camera.position = position;
         this.camera.target = target;
         this.camera.update();
@@ -206,16 +207,16 @@ export class Json3dScene implements CreateSceneClass {
         const aable2: Animatable = Animation.CreateAndStartAnimation('animateCamera', cam, 'position', speed, frameCount, cam.position, newPos, 0, ease) as Animatable;
         aable2.disposeOnEnd = true;
     }
-    
+
     displayBottomWithAnimation(): void {
         const boundingInfo = this.thinstanceMgr.box.getBoundingInfo();
         const target = boundingInfo.boundingBox.centerWorld;
         const position = new Vector3(target.x, target.y - 20, target.z);
-        
+
         this.animateCameraTargetToPosition(this.camera, this.speed, this.frameCount, target);
         this.animateCameraToPosition(this.camera, this.speed, this.frameCount, position);
     }
-    
+
     listenForNavigation(): void {
         this.scene.onKeyboardObservable.add((eventData: KeyboardInfo) => {
             const key = eventData.event.key;
@@ -235,7 +236,7 @@ export class Json3dScene implements CreateSceneClass {
             }
         });
     }
-    
+
     displayJson(json: any): void {
         const params = new URLSearchParams(location.search);
         const layoutStr = params.get('layout') as string;
@@ -259,9 +260,18 @@ export class Json3dScene implements CreateSceneClass {
 
         const thinstanceMgr = new ThinstanceMgr();
         this.thinstanceMgr = thinstanceMgr;
-        const layoutMgr = new LayoutMgr(this.scene, spriteMgr, thinstanceMgr);
+
+        let layoutMgr: LayoutMgr;
+        switch (layout) {
+            case Layout.SIMPLE:
+                layoutMgr = new SimpleLayoutMgr(this.scene, spriteMgr, thinstanceMgr);
+                break;
+            case Layout.RING:
+                layoutMgr = new RingLayoutMgr(this.scene, spriteMgr, thinstanceMgr);
+                break;
+        }
         layoutMgr.displayAndLayoutJson(layout);
-        
+
         this.scene.onPointerDown = (evt, pickResult) => {
             if (this.wantMeshSelection) {
                 // console.log('PICK!', pickResult); // pickResult.pickedMesh.name);
