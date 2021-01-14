@@ -69,7 +69,7 @@ export class SimpleLayoutMgr implements LayoutMgr {
         return offsets;
     }
 
-    public displayAndLayoutJson(layout: Layout): void {
+    public displayAndLayoutJson() {
         this.displayJsonRec(this.spriteMgr.json, 0, 0, 0, Direction.xDirection);
         this.thinstanceMgr.makeInstances(this.scene);
     }

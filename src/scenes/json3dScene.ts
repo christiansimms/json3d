@@ -270,7 +270,7 @@ export class Json3dScene implements CreateSceneClass {
                 layoutMgr = new RingLayoutMgr(this.scene, spriteMgr, thinstanceMgr);
                 break;
         }
-        layoutMgr.displayAndLayoutJson(layout);
+        layoutMgr.displayAndLayoutJson();
 
         this.scene.onPointerDown = (evt, pickResult) => {
             if (this.wantMeshSelection) {

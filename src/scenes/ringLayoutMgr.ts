@@ -1,10 +1,10 @@
 import {Scene} from "@babylonjs/core/scene";
 import {SpriteMgr} from "./spriteMgr";
 import {ThinstanceMgr} from "./thinstanceMgr";
-import {Direction, KindOfMarker, Layout, LayoutMgr, MAX_SPRITE_TEXT_WIDTH, Offsets} from "./model";
+import {Direction, FrameAndInfo, KindOfMarker, Layout, LayoutMgr, MAX_SPRITE_TEXT_WIDTH, Offsets} from "./model";
 
 export class RingLayoutMgr implements LayoutMgr {
-    spriteCount = 0;
+    objectDiameter: Map<string, number> = new Map();
 
     constructor(public scene: Scene, public spriteMgr: SpriteMgr, public thinstanceMgr: ThinstanceMgr) {
     }
@@ -83,9 +83,30 @@ export class RingLayoutMgr implements LayoutMgr {
         return offsets;
     }
 
-    public displayAndLayoutJson(layout: Layout): void {
+    public displayAndLayoutJson() {
+        this.calcRingSizes(this.spriteMgr.json);
         this.displayJsonRingRec(this.spriteMgr.json, 0, 0, 0, Direction.xDirection);
         this.thinstanceMgr.makeInstances(this.scene);
+    }
+
+    private calcRingSizes(json: any): void {
+        if (json instanceof Array) {
+            json.forEach(child => {
+                this.calcRingSizes(child);
+            });
+        } else if (json instanceof Object) {
+            Object.keys(json).forEach(key => {
+                const keyDiameter = this.calcRingSizeOfString(json);
+                const valueDiameter = this.calcRingSizes(json[key]);
+                this.objectDiameter.set(json, 0);
+            });
+        } else {
+            this.calcRingSizeOfString(json);
+        }
+    }
+
+    private calcRingSizeOfString(json: string) {
+
     }
 }
 
