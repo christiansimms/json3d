@@ -18,17 +18,22 @@ export const SMALL_RANDOM_ARRAY_JSON =
         //     "child5",
         // ]
         "Hello There! This is an intentionally long line",
-        "HELLO",
-        "THERE",
+        "Hello",
+        "There",
         "first",
         "second",
-        "ANOTHER",
-        "ANOTHER",
+        "Another",
+        "Another",
         3,
-        {
-            "a": 1,
-            "b": [1, 2, 3],
-        },
+        [
+        	"Child 1",
+			"Child 2",
+			"Child 3",
+		],
+        // {
+        //     "a": 1,
+        //     "b": [1, 2, 3],
+        // },
         // {
         //     "a": 1,
         //     "b": 1,

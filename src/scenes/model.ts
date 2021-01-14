@@ -1,5 +1,10 @@
 import {ISpriteJSONSprite} from "@babylonjs/core/Sprites/ISprites";
 
+export enum Layout {
+    SIMPLE,
+    RING,
+}
+
 export enum Direction {
     xDirection,
     zDirection,

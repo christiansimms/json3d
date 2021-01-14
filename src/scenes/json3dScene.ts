@@ -31,6 +31,7 @@ import {SkyMaterial} from "@babylonjs/materials/sky";
 import {LayoutMgr} from "./layoutMgr";
 import {SpriteMgr} from "./spriteMgr";
 import {ThinstanceMgr} from "./thinstanceMgr";
+import {Layout} from "./model";
 
 // Run: npm start
 // Display with: http://localhost:8080
@@ -111,7 +112,7 @@ export class Json3dScene implements CreateSceneClass {
             const json = await loadDirectory(repo);
             this.displayJson(json);
         } else {
-            // this.displayJson(SMALL_RANDOM_OBJECT_JSON);
+            // this.displayJson(SMALL_RANDOM_OBJECT_JSON, layout);
             this.displayJson(SMALL_RANDOM_ARRAY_JSON);
         }
 
@@ -235,21 +236,19 @@ export class Json3dScene implements CreateSceneClass {
         });
     }
     
-    loadAsText(theFile) {
-        const reader = new FileReader();
-
-        reader.onload = (loadedEvent) => {
-            // result contains loaded file.
-            if (loadedEvent && loadedEvent.target) {
-                console.log(`Read file: `, (loadedEvent.target.result as string).length);
-                const json = JSON.parse(loadedEvent.target.result as string);
-                this.displayJson(json);
-            }
-        };
-        reader.readAsText(theFile);
-    }
-    
     displayJson(json: any): void {
+        const params = new URLSearchParams(location.search);
+        const layoutStr = params.get('layout') as string;
+        let layout: Layout;
+        if (layoutStr) {
+            layout = Layout[layoutStr.toUpperCase()];
+            if (layout === undefined) {
+                throw `Did not recognize layout: ${layoutStr}`;
+            }
+        } else {
+            layout = Layout.SIMPLE;
+        }
+
         // Create a packed manager
         // const spriteMgr = new SpriteMgr(SMALL_RANDOM_OBJECT_JSON);
         // const spriteMgr = new SpriteMgr(SMALL_RANDOM_ARRAY_JSON);
@@ -261,7 +260,7 @@ export class Json3dScene implements CreateSceneClass {
         const thinstanceMgr = new ThinstanceMgr();
         this.thinstanceMgr = thinstanceMgr;
         const layoutMgr = new LayoutMgr(this.scene, spriteMgr, thinstanceMgr);
-        layoutMgr.displayAndLayoutJson();
+        layoutMgr.displayAndLayoutJson(layout);
         
         this.scene.onPointerDown = (evt, pickResult) => {
             if (this.wantMeshSelection) {

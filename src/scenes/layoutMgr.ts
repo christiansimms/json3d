@@ -2,7 +2,7 @@ import {Scene} from "@babylonjs/core/scene";
 import {Sprite} from "@babylonjs/core/Sprites/sprite";
 import {SpriteMgr} from "./spriteMgr";
 import {ThinstanceMgr} from "./thinstanceMgr";
-import {Direction, KindOfMarker, Offsets} from "./model";
+import {Direction, KindOfMarker, Layout, MAX_SPRITE_TEXT_WIDTH, Offsets} from "./model";
 
 export class LayoutMgr {
     spriteCount = 0;
@@ -86,8 +86,64 @@ export class LayoutMgr {
         return offsets;
     }
 
-    public displayAndLayoutJson(): void {
-        this.displayJsonRec(this.spriteMgr.json, 0, 0, 0, Direction.xDirection);
+    private displayJsonRingRec(json: any, x: number, y: number, z: number, direction: Direction): Offsets {
+        const offsets: Offsets = {xOffset: 0, zOffset: 0};
+        if (json instanceof Array) {
+            // Arrays are stacked in z-direction, each element goes in x-direction.
+            y -= 4;
+            const childrenCount = json.length;
+            const angleStep = Math.PI * 2 / childrenCount;
+
+            // Calculate circumference.
+            const maxWidthOfEachChildGuess = MAX_SPRITE_TEXT_WIDTH / this.spriteMgr.lineHeight; // Currently 5.
+            const totalCircumference = childrenCount * (maxWidthOfEachChildGuess + 3);
+            const radius = totalCircumference / Math.PI / 2;
+
+            json.forEach((child, index) => {
+                const angle = index * angleStep;
+                // position
+                const ringX = Math.cos(angle) * radius;
+                const ringZ = Math.sin(angle) * radius;
+
+                const offset = this.displayJsonRingRec(child, x + ringX, y, z + ringZ, Direction.xDirection);
+                this.thinstanceMgr.addMarker(KindOfMarker.arrayMarker, x + ringX, y, z + ringZ, offset);
+                updateOffsets(offsets, offset, Direction.xDirection);
+                offsets.zOffset += 2;
+            });
+        } else if (json instanceof Object) {
+            // Objects are stacked in x-direction, each element goes in z-direction.
+            y -= 4;
+            Object.keys(json).forEach(key => {
+                // Display key.
+                const offsetKey = this.addSprite(key, x + offsets.xOffset, y, z, Direction.zDirection);
+                this.thinstanceMgr.addMarker(KindOfMarker.objectMarker, x + offsets.xOffset, y, z, offsetKey);
+
+                // Display value.
+                const extraZSpace = 0.5;
+                const offsetValue = this.displayJsonRingRec(json[key], x + offsets.xOffset, y, z + offsetKey.zOffset + extraZSpace, Direction.zDirection);
+                this.thinstanceMgr.addMarker(KindOfMarker.objectMarker, x + offsets.xOffset, y, z + offsetKey.zOffset + extraZSpace, offsetValue);
+                const totalOffset: Offsets = {
+                    xOffset: offsetKey.xOffset + offsetValue.xOffset,
+                    zOffset: offsetKey.zOffset + offsetValue.zOffset + extraZSpace,
+                };
+                updateOffsets(offsets, totalOffset, Direction.zDirection);
+                offsets.xOffset += 2;
+            });
+        } else {
+            return this.addSprite(json, x, y, z, direction);
+        }
+        return offsets;
+    }
+
+    public displayAndLayoutJson(layout: Layout): void {
+        switch (layout) {
+            case Layout.SIMPLE:
+                this.displayJsonRec(this.spriteMgr.json, 0, 0, 0, Direction.xDirection);
+                break;
+            case Layout.RING:
+                this.displayJsonRingRec(this.spriteMgr.json, 0, 0, 0, Direction.xDirection);
+                break;
+        }
         this.thinstanceMgr.makeInstances(this.scene);
     }
 }
