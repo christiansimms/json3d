@@ -1,6 +1,6 @@
 import {Engine} from "@babylonjs/core/Engines/engine";
 import {getSceneModuleWithName} from "./createScene";
-import {RANDOM_JSON, SMALL_RANDOM_ARRAY_JSON} from "../assets/randomJson";
+import {RANDOM_JSON, SMALL_RANDOM_ARRAY_JSON, SMALL_RANDOM_OBJECT_JSON} from "../assets/randomJson";
 import {Json3dScene} from "./scenes/json3dScene";
 import {Scene} from "@babylonjs/core/scene";
 import {FilesInput} from "@babylonjs/core";
@@ -31,7 +31,8 @@ class SceneMgr {
         buttonSmallJSON.addEventListener('click', event => {
             const formDiv: HTMLElement = document.getElementById('formDiv') as HTMLElement;
             formDiv.style.display = 'none';
-            this.createSceneWithJSON(SMALL_RANDOM_ARRAY_JSON);
+            // this.createSceneWithJSON(SMALL_RANDOM_ARRAY_JSON);
+            this.createSceneWithJSON(SMALL_RANDOM_OBJECT_JSON);
         });
 
         const buttonLargeJSON: HTMLElement = document.getElementById('buttonLargeJSON') as HTMLElement;

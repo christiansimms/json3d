@@ -13,7 +13,7 @@ import "@babylonjs/core/Materials/standardMaterial";
 // import {GridMaterial} from "@babylonjs/materials";
 import {GridMaterial} from "@babylonjs/materials/grid";
 import "@babylonjs/materials";
-import {SMALL_RANDOM_ARRAY_JSON} from "../../assets/randomJson";
+import {SMALL_RANDOM_ARRAY_JSON, SMALL_RANDOM_OBJECT_JSON} from "../../assets/randomJson";
 import {showAxis} from "../util";
 import {
     Animatable,
@@ -113,8 +113,8 @@ export class Json3dScene implements CreateSceneClass {
             const json = await loadDirectory(repo);
             this.displayJson(json);
         } else {
-            // this.displayJson(SMALL_RANDOM_OBJECT_JSON, layout);
-            this.displayJson(SMALL_RANDOM_ARRAY_JSON);
+            // this.displayJson(SMALL_RANDOM_OBJECT_JSON);
+            // this.displayJson(SMALL_RANDOM_ARRAY_JSON);
         }
 
         this.listenForNavigation();
