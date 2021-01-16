@@ -127,20 +127,24 @@ export class RingLayoutMgr implements LayoutMgr {
                 maxDiameter = Math.max(maxDiameter, diameter);
             });
             const diameter = this.calcDiameterIncludingChildren(json.length, maxDiameter);
-            this.objectDiameter.set(json, diameter);
+            this.setDiameter(json, diameter);
             return diameter;
         } else if (json instanceof Object) {
             let maxDiameter = 0;
+            console.log(`DEBUG maxDiameter.start=${maxDiameter}`);
             Object.keys(json).forEach(key => {
                 const keyDiameter = this.calcRingSizeOfString(json);
                 const value = json[key];  // Might be string or object.
                 const valueDiameter = this.calcRingSizes(value);
-                this.objectDiameter.set(value, valueDiameter);
+                this.setDiameter(value, valueDiameter);
                 const diameter = keyDiameter + valueDiameter;
+                console.log(`DEBUG maxDiameter.before=${maxDiameter}`);
                 maxDiameter = Math.max(maxDiameter, diameter);
+                console.log(`DEBUG maxDiameter.after=${maxDiameter}`);
             });
-            const diameter = this.calcDiameterIncludingChildren(json.length, maxDiameter);
-            this.objectDiameter.set(json, diameter);
+            console.log(`DEBUG maxDiameter.at-end=${maxDiameter}`);
+            const diameter = this.calcDiameterIncludingChildren(Object.keys(json).length, maxDiameter);
+            this.setDiameter(json, diameter);
             return diameter;
         } else {
             return this.calcRingSizeOfString(json);
@@ -152,8 +156,15 @@ export class RingLayoutMgr implements LayoutMgr {
         const maxWidthOfEachChildGuess = MAX_SPRITE_TEXT_WIDTH / this.spriteMgr.lineHeight; // Currently 5.
         const totalCircumference = maxWidthOfEachChildGuess;
         const diameter = totalCircumference;
-        this.objectDiameter.set(json, diameter);
+        this.setDiameter(json, diameter);
         return diameter;
+    }
+
+    private setDiameter(json: any, diameter: number): void {
+        if (!diameter) {
+            throw `Bad diameter: ${diameter} on ${json}`;
+        }
+        this.objectDiameter.set(json, diameter);
     }
 }
 
