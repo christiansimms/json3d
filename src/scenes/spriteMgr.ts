@@ -1,11 +1,11 @@
 import {ISpriteJSONAtlas, ISpriteJSONSprite} from "@babylonjs/core/Sprites/ISprites";
 import {SpritePackedManager} from "@babylonjs/core/Sprites/spritePackedManager";
 import {Scene} from "@babylonjs/core/scene";
-import {FrameAndInfo, MAX_SPRITE_TEXT_WIDTH} from "./model";
+import {FrameAndInfo, MAX_SPRITE_TEXT_LINE_HEIGHT, MAX_SPRITE_TEXT_WIDTH} from "./model";
 import {Sprite} from "@babylonjs/core/Sprites/sprite";
 
 export class SpriteMgr {
-    lineHeight = 20;
+    lineHeight = MAX_SPRITE_TEXT_LINE_HEIGHT;
     xFudgeFactor = 5;
     yFudgeFactor = 2;
 
