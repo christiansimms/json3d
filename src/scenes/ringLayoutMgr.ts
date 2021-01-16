@@ -108,7 +108,7 @@ export class RingLayoutMgr implements LayoutMgr {
     }
 
     private calcDiameterIncludingChildren(childrenCount: number, maxDiameter: number): number {
-        const totalCircumference = childrenCount * (maxDiameter + 3);
+        const totalCircumference = childrenCount * (maxDiameter + 1);
         const diameter = totalCircumference / Math.PI;
         return diameter;
     }
