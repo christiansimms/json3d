@@ -131,18 +131,14 @@ export class RingLayoutMgr implements LayoutMgr {
             return diameter;
         } else if (json instanceof Object) {
             let maxDiameter = 0;
-            console.log(`DEBUG maxDiameter.start=${maxDiameter}`);
             Object.keys(json).forEach(key => {
                 const keyDiameter = this.calcRingSizeOfString(json);
                 const value = json[key];  // Might be string or object.
                 const valueDiameter = this.calcRingSizes(value);
                 this.setDiameter(value, valueDiameter);
                 const diameter = keyDiameter + valueDiameter;
-                console.log(`DEBUG maxDiameter.before=${maxDiameter}`);
                 maxDiameter = Math.max(maxDiameter, diameter);
-                console.log(`DEBUG maxDiameter.after=${maxDiameter}`);
             });
-            console.log(`DEBUG maxDiameter.at-end=${maxDiameter}`);
             const diameter = this.calcDiameterIncludingChildren(Object.keys(json).length, maxDiameter);
             this.setDiameter(json, diameter);
             return diameter;
