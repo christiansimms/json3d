@@ -1,7 +1,7 @@
 import {Engine} from "@babylonjs/core/Engines/engine";
 import {getSceneModuleWithName} from "./createScene";
 import {RANDOM_JSON, SMALL_RANDOM_ARRAY_JSON, SMALL_RANDOM_OBJECT_JSON} from "../assets/randomJson";
-import {Json3dScene} from "./scenes/json3dScene";
+import {Json3dScene, loadDirectory} from "./scenes/json3dScene";
 import {Scene} from "@babylonjs/core/scene";
 import {FilesInput} from "@babylonjs/core";
 
@@ -67,6 +67,15 @@ class SceneMgr {
         window.addEventListener("resize", function () {
             engine.resize();
         });
+
+        // Display scene immediately if requested.
+        const params = new URLSearchParams(location.search);
+        const repo = params.get('repo') as string;
+        if (repo) {
+            const json = loadDirectory(repo).then(json => {
+                this.createSceneWithJSON(json);
+            });
+        }
     }
 
     listenForDroppedFiles(): void {
