@@ -13,13 +13,13 @@ function loadDirectory(dir) {
         return fs.statSync(path.join(dir, file)).isDirectory()
             ? {
                 name: file,
-                path: path.join(dir, file),
+                // path: path.join(dir, file),
                 children: loadDirectory(path.join(dir, file)),
             }
             : {
                 name: file,
-                path: path.join(dir, file),
-                size: fs.statSync(path.join(dir, file)).size,
+                // path: path.join(dir, file),
+                // size: fs.statSync(path.join(dir, file)).size,
             };
     });
 }
